@@ -2,6 +2,10 @@
 
 A lightweight desktop presenter app for quickly showing images and videos to an audience.
 
+## Download
+
+- Latest release: https://github.com/ketchuphed/dnd-presenter/releases/latest
+
 ## Features
 
 - Control window with a media explorer list
@@ -40,11 +44,6 @@ npm run dist:zip
 ```
 
 Builds the same app folder and also creates `dist/v<version>/DnD Presenter-v<version>-win32-x64.zip` for easy sharing.
-
-## App Icon
-
-- Vector source icon is at `assets/app-icon.svg`.
-- For Windows executable branding, export this SVG to `.ico` (recommended sizes: 256, 128, 64, 48, 32, 16) and pass it to packager with `--icon`.
 
 ## Usage
 
