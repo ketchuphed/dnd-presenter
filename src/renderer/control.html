@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DnD Presenter - Control</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="control-layout">
+      <header class="toolbar">
+        <h1>DnD Presenter</h1>
+        <div class="toolbar-actions">
+          <div id="presenterStatus" class="presenter-status" aria-live="polite">Presenter: Live Media</div>
+          <div id="presenterReconnect" class="presenter-reconnect hidden" aria-live="polite">
+            Presenter disconnected.
+            <button id="reopenPresenterBtn" class="button">Reopen Presenter</button>
+          </div>
+          <button id="pickBtn" class="button">Add Files/Folders</button>
+          <button id="prevBtn" class="button">Previous</button>
+          <button id="nextBtn" class="button">Next</button>
+          <label class="thumb-size-control" for="thumbSize">
+            Thumbnail Size
+            <input id="thumbSize" type="range" min="110" max="240" value="150" />
+          </label>
+          <button id="lockControlsBtn" class="button">Lock Controls: Off</button>
+          <button id="defaultImageBtn" class="button">Set Default Image</button>
+          <button id="clearDefaultBtn" class="button">Clear Default</button>
+          <button id="fullscreenBtn" class="button">Return to Fullscreen</button>
+          <button id="lightBgBtn" class="button">Light BG: Off</button>
+          <button id="blackoutBtn" class="button button-danger">Blackout Screen</button>
+        </div>
+      </header>
+
+      <section class="content">
+        <aside class="media-list-panel">
+          <h2>Media Explorer</h2>
+          <p class="hint">Select files or folders, browse nested folders, then click any thumbnail to present.</p>
+          <p id="defaultImageStatus" class="hint"></p>
+          <div id="mediaTree" class="media-tree"></div>
+        </aside>
+
+        <div id="panelResizer" class="panel-resizer" role="separator" aria-orientation="vertical" aria-label="Resize media explorer"></div>
+
+        <section class="preview-panel">
+          <h2>Selected Preview</h2>
+          <div id="preview" class="preview-empty">No media selected yet.</div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./control.js"></script>
+  </body>
+</html>

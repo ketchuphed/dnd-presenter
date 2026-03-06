@@ -1,0 +1,25 @@
+{
+  "name": "dnd-presenter",
+  "version": "0.9.0",
+  "description": "Quick image/video presenter with control and second-screen display",
+  "productName": "DnD Presenter",
+  "companyName": "DnD Presenter",
+  "author": "DnD Presenter",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:exe": "powershell -NoProfile -Command \"$outDir = 'dist/v' + $env:npm_package_version; electron-packager . 'DnD Presenter' --platform=win32 --arch=x64 --out=$outDir --overwrite --app-version $env:npm_package_version --win32metadata.CompanyName='DnD Presenter' --win32metadata.FileDescription='DnD Presenter' --win32metadata.ProductName='DnD Presenter' --win32metadata.OriginalFilename='DnD Presenter.exe'\"",
+    "dist:zip": "powershell -NoProfile -Command \"npm run dist:exe; $baseDir = 'dist/v' + $env:npm_package_version; $appDir = Join-Path $baseDir 'DnD Presenter-win32-x64'; $zipPath = Join-Path $baseDir ('DnD Presenter-v' + $env:npm_package_version + '-win32-x64.zip'); Compress-Archive -Path (Join-Path $appDir '*') -DestinationPath $zipPath -Force\"",
+    "dist": "npm run dist:zip"
+  },
+  "keywords": [
+    "electron",
+    "presenter",
+    "media"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@electron/packager": "^18.3.6",
+    "electron": "^37.2.0"
+  }
+}
