@@ -1,23 +1,23 @@
 # DnD Presenter
 
-A lightweight desktop presenter app for quickly showing images and videos to an audience.
+DnD Presenter is a simple desktop app for showing images and videos to your players on a second screen.
 
 ## Download
 
-- Latest release: https://github.com/ketchuphed/dnd-presenter/releases/latest
+- Grab the latest build here: https://github.com/ketchuphed/dnd-presenter/releases/latest
 
 ## Features
 
-- Control window with a media explorer list
-- Add individual files or entire folders
-- Click any media item to instantly show it in a fullscreen presenter window
-- Presenter window automatically opens on the second monitor (if available)
+- Separate control and presenter windows
+- Add individual files or whole folders
+- Click any thumbnail to show it instantly on the presenter screen
+- Presenter window auto-opens on your second monitor when available
 - Supports common image and video formats
-- Blackout button for a quick blank screen
-- Presenter reconnect banner with one-click reopen
-- Next/Previous navigation buttons and keyboard shortcuts
-- Optional lock mode to prevent accidental control changes during a show
-- Preloading of nearby images for smoother navigation
+- One-click blackout screen
+- Reconnect banner with a quick reopen button
+- Next/Previous controls plus keyboard shortcuts
+- Lock mode to avoid accidental clicks during a session
+- Nearby-image preloading for smoother browsing
 
 ## Requirements
 
@@ -31,27 +31,29 @@ npm install
 npm start
 ```
 
+That’s it—once it launches, use the control window to load media and drive what appears on the presenter display.
+
 ## Package for Windows
 
 ```bash
 npm run dist:exe
 ```
 
-Builds a runnable Windows app folder at `dist/v<version>/DnD Presenter-win32-x64/`.
+Creates a runnable Windows app folder at `dist/v<version>/DnD Presenter-win32-x64/`.
 
 ```bash
 npm run dist:zip
 ```
 
-Builds the same app folder and also creates `dist/v<version>/DnD Presenter-v<version>-win32-x64.zip` for easy sharing.
+Builds the same app folder and also creates `dist/v<version>/DnD Presenter-v<version>-win32-x64.zip`, which is handy for sharing.
 
 ## Usage
 
-1. Launch the app.
+1. Start the app.
 2. In the control window, click **Add Files/Folders**.
-3. Choose one or more files and/or folders.
-4. Click an item in the media list to display it on the presenter screen.
-5. Use **Blackout Screen** when needed.
+3. Pick one or more files/folders.
+4. Click a media item to present it.
+5. Use **Blackout Screen** any time you want to hide the display.
 
 ## Keyboard Shortcuts
 
@@ -65,4 +67,4 @@ Builds the same app folder and also creates `dist/v<version>/DnD Presenter-v<ver
 ## Notes
 
 - If only one monitor is connected, both windows open on the same display.
-- Video playback includes audio in the presenter window.
+- Video playback audio comes from the control window.
