@@ -34,7 +34,13 @@
 
       <section class="content">
         <aside class="media-list-panel">
-          <h2>Media Explorer</h2>
+          <div class="media-list-header">
+            <h2>Media Explorer</h2>
+            <div class="tree-actions">
+              <button id="expandAllBtn" class="button button-small">Expand All</button>
+              <button id="collapseAllBtn" class="button button-small">Collapse All</button>
+            </div>
+          </div>
           <p class="hint">Select files or folders, browse nested folders, then click any thumbnail to present.</p>
           <p id="defaultImageStatus" class="hint"></p>
           <div id="mediaTree" class="media-tree"></div>
@@ -45,6 +51,7 @@
         <section class="preview-panel">
           <h2>Selected Preview</h2>
           <div id="preview" class="preview-empty">No media selected yet.</div>
+          <p id="activeFileName" class="preview-file-name">Active file: none.</p>
         </section>
       </section>
     </main>

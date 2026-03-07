@@ -234,9 +234,13 @@ ipcMain.handle('presenter:show', async (_event, selectedPath) => {
   });
 
   if (!presenterWindow.isVisible()) {
-    presenterWindow.show();
+    if (typeof presenterWindow.showInactive === 'function') {
+      presenterWindow.showInactive();
+    } else {
+      presenterWindow.show();
+    }
   }
-  presenterWindow.focus();
+
   return { ok: true };
 });
 

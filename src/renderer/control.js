@@ -16,6 +16,9 @@ const fullscreenBtn = document.getElementById('fullscreenBtn');
 const lightBgBtn = document.getElementById('lightBgBtn');
 const blackoutBtn = document.getElementById('blackoutBtn');
 const previewElement = document.getElementById('preview');
+const activeFileNameElement = document.getElementById('activeFileName');
+const expandAllBtn = document.getElementById('expandAllBtn');
+const collapseAllBtn = document.getElementById('collapseAllBtn');
 const THUMB_SIZE_STORAGE_KEY = 'dndPresenter.thumbSize';
 const SOURCE_PATHS_STORAGE_KEY = 'dndPresenter.sourcePaths';
 const DEFAULT_IMAGE_STORAGE_KEY = 'dndPresenter.defaultImagePath';
@@ -34,6 +37,24 @@ const imagePreloadCache = new Map();
 
 function toMediaUrl(mediaPath) {
   return `file:///${mediaPath.replace(/\\/g, '/')}`;
+}
+
+function getItemFileName(item) {
+  if (item?.name) {
+    return item.name;
+  }
+
+  if (item?.path) {
+    const segments = item.path.split(/[\\/]/);
+    return segments[segments.length - 1] || '';
+  }
+
+  return '';
+}
+
+function updateActiveFileName(item) {
+  const fileName = getItemFileName(item);
+  activeFileNameElement.textContent = fileName ? `Active file: ${fileName}` : 'Active file: none.';
 }
 
 function createFolderNode(name = '') {
@@ -108,8 +129,17 @@ function applyControlLockState() {
   fullscreenBtn.disabled = disable;
   lightBgBtn.disabled = disable;
   blackoutBtn.disabled = disable;
+  expandAllBtn.disabled = disable;
+  collapseAllBtn.disabled = disable;
   panelResizer.style.pointerEvents = disable ? 'none' : 'auto';
   mediaTreeElement.classList.toggle('controls-locked', disable);
+}
+
+function setAllFoldersExpanded(expanded) {
+  const folderNodes = mediaTreeElement.querySelectorAll('details.folder-node');
+  for (const folder of folderNodes) {
+    folder.open = expanded;
+  }
 }
 
 function clampExplorerWidth(width) {
@@ -248,6 +278,11 @@ function createMediaTile(item) {
     button.appendChild(imageThumb);
   }
 
+  const fileNameOverlay = document.createElement('div');
+  fileNameOverlay.className = 'thumb-name';
+  fileNameOverlay.textContent = getItemFileName(item);
+  button.appendChild(fileNameOverlay);
+
   button.addEventListener('click', async () => {
     if (!canUseControls()) {
       return;
@@ -343,7 +378,7 @@ function renderFolderNode(node, depth) {
   if (depth > 0) {
     const details = document.createElement('details');
     details.className = 'folder-node';
-    details.open = true;
+    details.open = false;
 
     const summary = document.createElement('summary');
     summary.className = 'folder-label';
@@ -375,6 +410,7 @@ function renderFolderNode(node, depth) {
 function clearPreview() {
   previewElement.className = 'preview-empty';
   previewElement.textContent = 'No media selected yet.';
+  updateActiveFileName(null);
 }
 
 function bindPreviewVideoSync(videoElement, mediaPath) {
@@ -405,6 +441,7 @@ function bindPreviewVideoSync(videoElement, mediaPath) {
 function renderPreview(item) {
   previewElement.className = '';
   previewElement.textContent = '';
+  updateActiveFileName(item);
 
   if (item.type === 'video') {
     const video = document.createElement('video');
@@ -535,6 +572,22 @@ lightBgBtn.addEventListener('click', async () => {
   await applyPresenterBackgroundMode();
 });
 
+expandAllBtn.addEventListener('click', () => {
+  if (!canUseControls()) {
+    return;
+  }
+
+  setAllFoldersExpanded(true);
+});
+
+collapseAllBtn.addEventListener('click', () => {
+  if (!canUseControls()) {
+    return;
+  }
+
+  setAllFoldersExpanded(false);
+});
+
 prevBtn.addEventListener('click', async () => {
   await navigateSelection(-1);
 });
@@ -569,30 +622,38 @@ window.presenterApi.onPresenterState((payload) => {
   updatePresenterReconnectState();
 });
 
-document.addEventListener('keydown', async (event) => {
+window.addEventListener('keydown', async (event) => {
   if (event.ctrlKey || event.metaKey || event.altKey) {
     return;
   }
 
   const target = event.target;
   const targetTag = target?.tagName?.toLowerCase();
-  if (targetTag === 'input' || targetTag === 'textarea') {
+  const isTextInput =
+    (targetTag === 'input' && target?.type !== 'range') ||
+    targetTag === 'textarea' ||
+    target?.isContentEditable;
+
+  if (isTextInput) {
     return;
   }
 
-  if (event.code === 'ArrowRight' || event.code === 'PageDown') {
+  const key = event.key;
+  const code = event.code;
+
+  if (key === 'ArrowRight' || code === 'ArrowRight' || key === 'PageDown' || code === 'PageDown') {
     event.preventDefault();
     await navigateSelection(1);
     return;
   }
 
-  if (event.code === 'ArrowLeft' || event.code === 'PageUp') {
+  if (key === 'ArrowLeft' || code === 'ArrowLeft' || key === 'PageUp' || code === 'PageUp') {
     event.preventDefault();
     await navigateSelection(-1);
     return;
   }
 
-  if (event.code === 'KeyB') {
+  if (code === 'KeyB' || key.toLowerCase() === 'b') {
     event.preventDefault();
     if (!canUseControls()) {
       return;
@@ -602,13 +663,13 @@ document.addEventListener('keydown', async (event) => {
     return;
   }
 
-  if (event.code === 'KeyL') {
+  if (code === 'KeyL' || key.toLowerCase() === 'l') {
     event.preventDefault();
     lockControlsBtn.click();
     return;
   }
 
-  if (event.code === 'KeyF') {
+  if (code === 'KeyF' || key.toLowerCase() === 'f') {
     event.preventDefault();
     if (!canUseControls()) {
       return;
@@ -618,7 +679,7 @@ document.addEventListener('keydown', async (event) => {
     return;
   }
 
-  if (event.code === 'Space') {
+  if (code === 'Space' || key === ' ') {
     const video = getCurrentPreviewVideo();
     if (!video) {
       return;
@@ -631,7 +692,7 @@ document.addEventListener('keydown', async (event) => {
       video.pause();
     }
   }
-});
+}, true);
 
 const savedThumbSize = localStorage.getItem(THUMB_SIZE_STORAGE_KEY);
 if (savedThumbSize) {
