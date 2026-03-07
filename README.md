@@ -5,6 +5,7 @@ DnD Presenter is a simple desktop app for showing images and videos to your play
 ## Download
 
 - Grab the latest build here: https://github.com/ketchuphed/dnd-presenter/releases/latest
+- Current stable: v0.9.1 — https://github.com/ketchuphed/dnd-presenter/releases/tag/v0.9.1
 
 ## Features
 
