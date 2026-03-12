@@ -80,9 +80,9 @@ DM Notes	https://example.com/notes
 
 If you're running a game session, this flow works well:
 
-1. Add your session folder (maps, handouts, cutscenes).
+1. Add your session folder(s) (maps, vistas, handouts, cutscenes).
 2. Keep the presenter blacked out while players are deciding.
-3. Click a map when combat or exploration starts.
+3. Click an image when most relavent to your players.
 4. Use `Right Arrow` / `Left Arrow` to move through scene images quickly.
 5. Tap blackout again when you want to hide surprises.
 
@@ -101,7 +101,6 @@ If you're running a game session, this flow works well:
 - `F`: Return presenter to fullscreen
 - `L`: Toggle lock controls
 - `Space`: Play/Pause preview video
-- `U`: Share the URL currently in the toolbar field
 
 ## Notes
 
