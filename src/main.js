@@ -6,6 +6,7 @@ const { pathToFileURL } = require('node:url');
 let controlWindow;
 let presenterWindow;
 let presenterBackgroundMode = 'dark';
+let presenterPageMode = 'app';
 
 const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg']);
 const VIDEO_EXTENSIONS = new Set(['.mp4', '.webm', '.mov', '.mkv', '.avi', '.m4v']);
@@ -17,6 +18,30 @@ function isSupportedMedia(filePath) {
 
 function isVideo(filePath) {
   return VIDEO_EXTENSIONS.has(path.extname(filePath).toLowerCase());
+}
+
+function normalizeSharedUrl(rawUrl) {
+  if (typeof rawUrl !== 'string') {
+    return null;
+  }
+
+  const trimmed = rawUrl.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const withProtocol = /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(trimmed) ? trimmed : `https://${trimmed}`;
+
+  try {
+    const parsed = new URL(withProtocol);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return null;
+    }
+
+    return parsed.toString();
+  } catch {
+    return null;
+  }
 }
 
 function walkDirectory(rootPath, currentPath, collector) {
@@ -68,6 +93,51 @@ function sendPresenterBackgroundMode() {
 
   presenterWindow.webContents.send('presenter:background-mode', {
     mode: presenterBackgroundMode
+  });
+}
+
+async function ensurePresenterRendererPage() {
+  if (!presenterWindow || presenterWindow.isDestroyed()) {
+    createPresenterWindow();
+    return;
+  }
+
+  if (presenterPageMode === 'app') {
+    return;
+  }
+
+  await new Promise((resolve) => {
+    presenterWindow.webContents.once('did-finish-load', () => {
+      presenterPageMode = 'app';
+      sendPresenterBackgroundMode();
+      resolve();
+    });
+
+    presenterWindow.loadFile(path.join(__dirname, 'renderer', 'presenter.html'));
+  });
+}
+
+function configureVideoEmbedHeaders() {
+  const filter = {
+    urls: ['*://*.youtube.com/*', '*://youtu.be/*', '*://*.vimeo.com/*']
+  };
+
+  const session = controlWindow?.webContents?.session || presenterWindow?.webContents?.session;
+  if (!session) {
+    return;
+  }
+
+  session.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
+    const nextHeaders = { ...details.requestHeaders };
+    const url = String(details.url || '').toLowerCase();
+
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      nextHeaders.Referer = 'https://www.youtube.com/';
+    } else if (url.includes('vimeo.com')) {
+      nextHeaders.Referer = 'https://vimeo.com/';
+    }
+
+    callback({ requestHeaders: nextHeaders });
   });
 }
 
@@ -132,6 +202,9 @@ function createPresenterWindow() {
   currentPresenterWindow.webContents.on('did-finish-load', () => {
     notifyControlPresenterState();
     sendPresenterBackgroundMode();
+    if (presenterPageMode !== 'external') {
+      presenterPageMode = 'app';
+    }
   });
 
   currentPresenterWindow.on('closed', () => {
@@ -202,6 +275,60 @@ ipcMain.handle('media:load-sources', async (_event, sourcePaths = []) => {
   return collectMediaFromSources(sourcePaths);
 });
 
+ipcMain.handle('websites:import-file', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(controlWindow, {
+    title: 'Import websites from text file',
+    properties: ['openFile'],
+    filters: [
+      { name: 'Text Files', extensions: ['txt', 'tsv'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]
+  });
+
+  if (canceled || filePaths.length === 0) {
+    return { ok: false, canceled: true, sites: [] };
+  }
+
+  try {
+    const content = fs.readFileSync(filePaths[0], 'utf8');
+    const lines = content.split(/\r?\n/);
+    const sites = [];
+    let invalidCount = 0;
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith('#')) {
+        continue;
+      }
+
+      const tabIndex = line.indexOf('\t');
+      if (tabIndex <= 0) {
+        invalidCount += 1;
+        continue;
+      }
+
+      const name = line.slice(0, tabIndex).trim();
+      const urlRaw = line.slice(tabIndex + 1).trim();
+      const url = normalizeSharedUrl(urlRaw);
+      if (!name || !url) {
+        invalidCount += 1;
+        continue;
+      }
+
+      sites.push({ name, url });
+    }
+
+    return {
+      ok: true,
+      path: filePaths[0],
+      sites,
+      invalidCount
+    };
+  } catch {
+    return { ok: false, canceled: false, sites: [], message: 'Unable to read the selected file.' };
+  }
+});
+
 ipcMain.handle('default-image:pick', async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog(controlWindow, {
     title: 'Choose default image',
@@ -222,6 +349,8 @@ ipcMain.handle('presenter:show', async (_event, selectedPath) => {
   if (!presenterWindow || presenterWindow.isDestroyed()) {
     createPresenterWindow();
   }
+
+  await ensurePresenterRendererPage();
 
   if (!selectedPath || !isSupportedMedia(selectedPath)) {
     return { ok: false, message: 'Unsupported media file.' };
@@ -246,10 +375,38 @@ ipcMain.handle('presenter:show', async (_event, selectedPath) => {
 
 ipcMain.handle('presenter:blackout', async () => {
   if (presenterWindow && !presenterWindow.isDestroyed()) {
+    await ensurePresenterRendererPage();
     presenterWindow.webContents.send('presenter:blackout');
   }
 
   return { ok: true };
+});
+
+ipcMain.handle('presenter:show-webpage', async (_event, payload) => {
+  if (!presenterWindow || presenterWindow.isDestroyed()) {
+    createPresenterWindow();
+  }
+
+  const rawUrl = typeof payload === 'string' ? payload : payload?.url;
+  const topLevel = Boolean(payload?.topLevel);
+  const normalizedUrl = normalizeSharedUrl(rawUrl);
+  if (!normalizedUrl) {
+    return { ok: false, message: 'Please provide a valid http/https URL.' };
+  }
+
+  if (topLevel) {
+    presenterPageMode = 'external';
+    await presenterWindow.loadURL(normalizedUrl);
+    return { ok: true, url: normalizedUrl, topLevel: true };
+  }
+
+  await ensurePresenterRendererPage();
+
+  presenterWindow.webContents.send('presenter:webpage', {
+    url: normalizedUrl
+  });
+
+  return { ok: true, url: normalizedUrl };
 });
 
 ipcMain.handle('presenter:enter-fullscreen', async () => {
@@ -299,12 +456,17 @@ ipcMain.on('presenter:video-control', (_event, payload) => {
     return;
   }
 
+  if (presenterPageMode !== 'app') {
+    return;
+  }
+
   presenterWindow.webContents.send('presenter:video-control', payload);
 });
 
 app.whenReady().then(() => {
   createControlWindow();
   createPresenterWindow();
+  configureVideoEmbedHeaders();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

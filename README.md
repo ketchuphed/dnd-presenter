@@ -10,10 +10,15 @@ DnD Presenter is a simple desktop app for showing images and videos to your play
 ## Features
 
 - Separate control and presenter windows
-- Add individual files or whole folders
+- Add individual files or whole folders (new additions are appended)
 - Click any thumbnail to show it instantly on the presenter screen
 - Presenter window auto-opens on your second monitor when available
 - Supports common image and video formats
+- Share a live webpage (like your initiative tracker site) to the presenter screen
+- Preview shared websites directly in the control preview panel
+- Save multiple website links as tiles in the media column for quick swapping
+- Import website tiles from a tab-delimited text file (`NAME<TAB>URL`)
+- Manage and remove loaded media sources from **Library Options**
 - One-click blackout screen
 - Reconnect banner with a quick reopen button
 - Next/Previous controls plus keyboard shortcuts
@@ -56,6 +61,21 @@ Builds the same app folder and also creates `dist/v<version>/DnD Presenter-v<ver
 4. Click a media item to present it.
 5. Use **Blackout Screen** any time you want to hide the display.
 
+## Website Import Format
+
+Use a plain text file where each line is:
+
+```text
+Name<TAB>https://example.com
+```
+
+Example:
+
+```text
+Combat Tracker	https://example.com/initiative
+DM Notes	https://example.com/notes
+```
+
 ## Quick Table Workflow
 
 If you're running a game session, this flow works well:
@@ -81,6 +101,7 @@ If you're running a game session, this flow works well:
 - `F`: Return presenter to fullscreen
 - `L`: Toggle lock controls
 - `Space`: Play/Pause preview video
+- `U`: Share the URL currently in the toolbar field
 
 ## Notes
 

@@ -16,7 +16,6 @@
             Presenter disconnected.
             <button id="reopenPresenterBtn" class="button">Reopen Presenter</button>
           </div>
-          <button id="pickBtn" class="button">Add Files/Folders</button>
           <button id="prevBtn" class="button">Previous</button>
           <button id="nextBtn" class="button">Next</button>
           <label class="thumb-size-control" for="thumbSize">
@@ -24,8 +23,6 @@
             <input id="thumbSize" type="range" min="110" max="240" value="150" />
           </label>
           <button id="lockControlsBtn" class="button">Lock Controls: Off</button>
-          <button id="defaultImageBtn" class="button">Set Default Image</button>
-          <button id="clearDefaultBtn" class="button">Clear Default</button>
           <button id="fullscreenBtn" class="button">Return to Fullscreen</button>
           <button id="lightBgBtn" class="button">Light BG: Off</button>
           <button id="blackoutBtn" class="button button-danger">Blackout Screen</button>
@@ -37,13 +34,22 @@
           <div class="media-list-header">
             <h2>Media Explorer</h2>
             <div class="tree-actions">
+              <button id="mediaSettingsBtn" class="button button-small">Library Options</button>
               <button id="expandAllBtn" class="button button-small">Expand All</button>
               <button id="collapseAllBtn" class="button button-small">Collapse All</button>
             </div>
           </div>
           <p class="hint">Select files or folders, browse nested folders, then click any thumbnail to present.</p>
-          <p id="defaultImageStatus" class="hint"></p>
+
           <div id="mediaTree" class="media-tree"></div>
+
+          <section class="websites-panel websites-panel-bottom">
+            <div class="media-list-header">
+              <h3>Websites</h3>
+              <button id="openWebsiteOptionsBtn" class="button button-small">Options</button>
+            </div>
+            <div id="websiteTiles" class="website-tiles"></div>
+          </section>
         </aside>
 
         <div id="panelResizer" class="panel-resizer" role="separator" aria-orientation="vertical" aria-label="Resize media explorer"></div>
@@ -55,6 +61,42 @@
         </section>
       </section>
     </main>
+
+    <div id="sourceSettingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="sourceSettingsTitle">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="sourceSettingsTitle">Library Options</h2>
+          <button id="closeSourceSettingsBtn" class="button button-small">Close</button>
+        </div>
+        <p class="hint">Manage loaded media sources, default image, and website options here.</p>
+
+        <h3 class="settings-subtitle">Media Sources</h3>
+        <div class="websites-row">
+          <button id="pickBtn" class="button button-small">Add Files/Folders</button>
+        </div>
+
+        <div id="sourceList" class="source-list"></div>
+
+        <h3 class="settings-subtitle">Default Image</h3>
+        <div class="websites-row">
+          <button id="defaultImageBtn" class="button button-small">Browse Default Image</button>
+        </div>
+        <div id="defaultImageList" class="source-list"></div>
+
+        <hr class="settings-divider" />
+        <h3 class="settings-subtitle">Website Library</h3>
+        <p class="hint">Add sites manually or import a tab-delimited text file: <code>NAME&lt;TAB&gt;URL</code>.</p>
+        <div class="websites-row">
+          <input id="siteTileNameInput" class="site-name-input" type="text" placeholder="Name (optional)" maxlength="40" />
+          <input id="siteTileUrlInput" class="site-url-input" type="text" placeholder="https://your-initiative-site" />
+        </div>
+        <div class="websites-row">
+          <button id="addSiteBtn" class="button button-small">Add Website</button>
+          <button id="importSitesBtn" class="button button-small">Import TXT</button>
+        </div>
+        <div id="websiteList" class="source-list"></div>
+      </div>
+    </div>
 
     <script src="./control.js"></script>
   </body>

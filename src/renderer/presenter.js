@@ -173,6 +173,31 @@ function applyVideoControl(payload) {
   }
 }
 
+function renderWebPage(payload) {
+  const pageUrl = typeof payload?.url === 'string' ? payload.url : '';
+  if (!pageUrl) {
+    showPlaceholder('Unable to load webpage.');
+    return;
+  }
+
+  const iframe = document.createElement('iframe');
+  iframe.className = 'presenter-webpage presenter-layer';
+  iframe.src = pageUrl;
+  iframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture; encrypted-media');
+  iframe.setAttribute('allowfullscreen', 'true');
+  iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+
+  transitionTo(iframe, {
+    waitForReady: (done) => {
+      iframe.addEventListener('load', done, { once: true });
+      iframe.addEventListener('error', done, { once: true });
+    }
+  });
+
+  activeVideoElement = null;
+  activeMediaPath = null;
+}
+
 window.presenterApi.onPresenterMedia((payload) => {
   renderMedia(payload);
 });
@@ -189,6 +214,10 @@ window.presenterApi.onPresenterVideoControl((payload) => {
 
 window.presenterApi.onPresenterBackground((payload) => {
   applyBackgroundMode(payload);
+});
+
+window.presenterApi.onPresenterWebPage((payload) => {
+  renderWebPage(payload);
 });
 
 if (placeholder) {
